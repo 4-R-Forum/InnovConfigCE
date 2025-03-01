@@ -10,7 +10,7 @@
 1) Git installed
     - .ssh setup for GitHub anautics-inc
 
-1) Powershell latest LTS (Long Term Support, 7.4.2 at time of writing) is installed. This includes the Pester 5.2 module. (OOTB Windows includes 5.1 for .Net Framework compatability.)  
+1) Powershell latest LTS (Long Term Support, 7.4 at time of writing) is installed. This includes the Pester 5.2 module. (OOTB Windows includes Powershell 5.1 for .Net Framework compatability.)  
 
 1) Powershell Modules installed.
     - ImportExcel
@@ -42,5 +42,4 @@
 
 ## Table of revisions
 
-1) JMH Original release 09/28/2023
-2) JMH Update 05/03/2024 - Revised for InnovConfig and Powershell Testing
+1) JMH 02/26/2025 First Community Edition

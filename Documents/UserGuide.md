@@ -10,12 +10,11 @@ See Documents\SetupGuide.md
 
 ## Summary
 
+1. Step Zero - create a new project reoro
 1. Step One - create new local database from repo commit
     - User Task - make changes in local instane
-
 1. Step Two - list configuration changes in Excel
     - User Task - select changes for export in Excel
-
 1. Step Three - export selected changes
     - User Task - merge changes to AML-Packages using diff tool
     - Test changes
@@ -78,12 +77,12 @@ to force focus to Terminal. This funky code needs to be called twice to produce 
 
 ## Table of revisions
 
-1. JMH 05/08/2024 - First draft of guide
+1. JMH 2/25/2025 - First Community Edition 
 
 ## Known issues
 
 1. Comments including /// TODO indicate planned improvements in scripts
 1. Excel report needs formatting column widths, filter and freeze top row
 1. Configuration Report in Excel has new code. Please report any Items that should be in the report but are not, and any other issues.
-1. Restore-DB requires Master_Config .bak file to have .mdf and .ldf filenames matching db name. This can be overcome using -RelocateFile paramete. The logical file must be known and the case where mdf and ldf files are on different drives accommodated. The work has not been done yet.
+1. Restore-DB requires Master_Config .bak file to have .mdf and .ldf filenames matching db name. This can be overcome using -RelocateFile parameter. The logical file must be known and the case where mdf and ldf files are on different drives accommodated.
 1. CopyInnovatorTree is in the InnovConfig folder but not implemented in the Module.

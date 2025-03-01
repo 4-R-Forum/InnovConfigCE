@@ -1,6 +1,6 @@
 $repos_folder = Resolve-Path '../'
-$module_location = $repos_folder.Path + '/InnovConfig/InnovConfig/InnovConfig.psm1'
-if ( Get-Module InnovConfig) { Remove-Module -Name InnovConfig }  # always use latest
+$module_location = $repos_folder.Path + '/InnovConfigCE/InnovConfig/InnovConfig.psm1'
+if ( Get-Module InnovConfigCE) { Remove-Module -Name InnovConfigCE }  # always use latest
 Import-Module $module_location  # load module from Repo
 Read-MasterConfig .\Master_Config.xml # sets module scope variables and reads config from project repo
 

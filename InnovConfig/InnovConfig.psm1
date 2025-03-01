@@ -24,9 +24,12 @@ $Session = [ordered]@{
     auto_test       = $false
 
 }
+# Note: Session variables will be resolvee relative to the path of the Project repo,
+# not the InnovConfigCE repo
+
 $InnovConfigSession = $null
 New-Variable -Name InnovConfigSession -Value $Session -Scope Script -Force
-$InnovConfigSession['iom_dll_loc']  = Resolve-Path './tools/IOM_SDK/.NET/IOM.dll'
+$InnovConfigSession['iom_dll_loc']  = Resolve-Path './tools/ConsoleUpgrade/IOM.dll'
 $InnovConfigSession['libs_dll_loc'] = Resolve-Path './tools/ConsoleUpgrade/Libs.dll'
 $InnovConfigSession['export_folder'] = Resolve-Path './Temp/Export/'
 Add-Type -AssemblyName System.Windows.Forms
@@ -125,10 +128,10 @@ function Restore-Database {
     Write-Host "Restore Completed"
     Write-Host -ForegroundColor Yellow "Ignore 'Restoring % Completed' msg. Not suppressed yet."
  
-    Invoke-Sqlcmd -ServerInstance $instance  -Database $db -Query "sp_change_users_login 'auto_fix','innovator'"
-    Invoke-Sqlcmd -ServerInstance $instance  -Database $db -Query "sp_change_users_login 'auto_fix','innovator_regular'"
-    Invoke-Sqlcmd -ServerInstance $instance  -Database $db -Query "sp_changedbowner 'sa'"
-    Write-Host "Database Ready" 
+    Invoke-Sqlcmd -ServerInstance $instance  -Database $db -TrustServerCertificate -Query "sp_change_users_login 'auto_fix','innovator'"
+    Invoke-Sqlcmd -ServerInstance $instance  -Database $db -TrustServerCertificate -Query "sp_change_users_login 'auto_fix','innovator_regular'"
+    Invoke-Sqlcmd -ServerInstance $instance  -Database $db -TrustServerCertificate -Query "sp_changedbowner 'sa'"
+    Write-Host "Database Ready"  
     return 0
 }
 
@@ -138,13 +141,14 @@ function Connect-Innov {
         [string] $login_name
     )
     # prompt to get password, with default, and confirm login
-    $pw_plain = "innovator"
+    $pw_plain = "innovator" # default value if none provided
     if (-not $InnovConfigSession['auto_test']) { # suppress user interaaction in test
         [System.Windows.Forms.SendKeys]::SendWait('^`') # Ctrl backtick twice, forces focus to terminal
         [System.Windows.Forms.SendKeys]::SendWait('^`') # Doing it twice shows terminal
         $pw_secure = Read-Host -AsSecureString -Prompt "Enter $login_name password, usual default"
         if ($pw_secure.Length -ne 0){$pw_plain=(ConvertFrom-SecureToPlain $pw_secure)}
     }
+    # Add-Type -Path $InnovConfigSession['iom_dll_loc']
     Add-Type -Path $InnovConfigSession['iom_dll_loc']
     Add-Type -Path $InnovConfigSession['libs_dll_loc']
     $conn =[Aras.IOM.IomFactory]::CreateHttpServerConnection( `
@@ -424,6 +428,8 @@ function Import-Packages {
     $pw_arg = 'password="'+$cu_pw+'"'
     $dir_arg =( 'dir="'+ $dir +'"') # Console Upgrade argument
     $log_arg = 'log="'+ $log_loc + $log_cu+'"' # Console Upgrade argument
+    $rel_arg = 'release="' +$innov_db+'"' # Console Upgrade argument, CE requires, use MyProject name
+
     ## apply PreProcessing files
     $aml_path_0_fq = (resolve-path ./src/PreProcessing/).Path
     foreach ($file in $files0)
@@ -441,8 +447,10 @@ function Import-Packages {
     {
     $mf_arg ='mfFile="'+$dir+$mf_file +'"'
     $descr_arg ='description="Imported from '+$dir+$mf_file +'"'
-    $cu_cmd ="$cu $srv_arg $db_arg $login_arg $pw_arg import merge verbose $dir_arg $mf_arg $rel $log_arg $descr_arg"
-    invoke-expression $cu_cmd
+    #$cu_cmd ="$cu $srv_arg $db_arg $login_arg $pw_arg import merge verbose $dir_arg $mf_arg $rel_arg $log_arg $descr_arg"
+    #invoke-expression $cu_cmd
+    $argl = $srv_arg +" "+ $db_arg  +" "+ $login_arg+" "+ $pw_arg +" "+  "import merge verbose  "+ $dir_arg +" "+$mf_arg+" "+ $rel_arg +" "+$log_arg +" "+$descr_arg
+    Start-Process -FilePath $cu -ArgumentList $argl -NoNewWindow -Wait
 
     }
     # end of run imports
