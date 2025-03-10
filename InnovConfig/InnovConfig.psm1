@@ -194,7 +194,7 @@ function Export-ConfigReport{
     'rb_TreeGridViewDefinition','qry_QueryDefinition',
     'PresentationConfiguration','CommandBarMenu','CommandBarSection','CommandBarMenuButton','CommandBarButton'
     )"
-    $res1 = Invoke-Sqlcmd -ServerInstance $sql_instance -Username 'sa' -Password 'innovator' -Database $innov_db -Query $sql_qry1
+    $res1 = Invoke-Sqlcmd -ServerInstance $sql_instance -Username 'sa' -Password 'innovator' -Database $innov_db -Query $sql_qry1 -TrustServerCertificate
     # $res1 is a list of table names for ItemTypes which need to be in PackageDefinitions
 
     [string] $sql_qry2_template = get-content $cr_templ_loc
@@ -208,7 +208,7 @@ function Export-ConfigReport{
         elseif ($it.instance_data -eq 'Identity') {$sql_qry2 = $sql_qry2.Replace('@Exclusions',$identity_excl)}
         elseif ($it.instance_data -eq 'List') {$sql_qry2 = $sql_qry2.Replace('@Exclusions',$list_excl)}
         else {$sql_qry2 = $sql_qry2.Replace('@Exclusions','')}
-        $res2 = Invoke-Sqlcmd -ServerInstance $sql_instance -Username 'sa' -Password 'innovator' -Database $innov_db -Query $sql_qry2
+        $res2 = Invoke-Sqlcmd -ServerInstance $sql_instance -Username 'sa' -Password 'innovator' -Database $innov_db -Query $sql_qry2 -TrustServerCertificate
         # $res2 is a list of instances for a package ItemType modified since the specified date
         # with exclusions for specified types
         $config_report += $res2 
@@ -216,7 +216,7 @@ function Export-ConfigReport{
     }
     [string] $sql_crr_template = get-content $crr_templ_loc
     $sql_crr = $sql_crr_template.Replace('@Date',$compare_date)
-    $res3 = Invoke-Sqlcmd -ServerInstance $sql_instance -Username 'sa' -Password 'innovator' -Database $innov_db -Query $sql_crr
+    $res3 = Invoke-Sqlcmd -ServerInstance $sql_instance -Username 'sa' -Password 'innovator' -Database $innov_db -Query $sql_crr -TrustServerCertificate
     $config_report += $res3
 
     $xlFile = 'ConfigReport.xlsx'
@@ -287,7 +287,11 @@ function Export-Changes {
         $action = [Aras.Tools.SolutionUpgrade.ImportExport]::Export # cih requires
         $dict = [System.Collections.Generic.Dictionary[string, int]]::new() # cih requires, not used for export
         $ei = New-Object Aras.Tools.SolutionUpgrade.ExportItem($this_pe_name,$this_pe_id,$this_type); # what to export
-        $cei.Export($ei,$this_pd,"1",$h,$action,$null,$dict) # execute the export
+        $pdict =  New-Object 'System.Collections.Generic.Dictionary[string, System.Collections.Generic.HashSet[string]]' # cih requires for export
+        $pdict[$this_type] = New-Object 'System.Collections.Generic.HashSet[string]'
+        $pdict[$this_type].Add($this_pe_id) | Out-Null # $pdict is now a dictionay with a single type name with a hashset of one id
+        $cei.Export($ei,$this_pd,"1",$h,$action,$null,$dict,$pdict) # execute the export
+        #Export(ExportItem item, string packageName, string level, Hashtable excludedRefs, ImportExport action, string[] languages, ConcurrentDictionary<string, Lazy<Item>> requestDictionary, Dictionary<string, HashSet<string>> packageElementIdsByElementType)
     }
     
 
